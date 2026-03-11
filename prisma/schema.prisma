@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  gender        String   // "male" | "female"
+  age           Int
+  height        Float    // cm
+  currentWeight Float    // kg
+  targetWeight  Float    // kg
+  targetDate    DateTime?
+  bmr           Float    // 计算得出
+  tdee          Float    // 计算得出
+  dailyCalorie  Float    // 目标每日摄入
+  activityLevel Float    @default(1.2) // 活动系数 1.2~1.9
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  records       DailyRecord[]
+}
+
+model DailyRecord {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  date              DateTime @unique  // 日期 (yyyy-MM-dd)
+
+  plannedWeight     Float?   // 计划体重 (目标曲线)
+  actualWeight      Float?   // 实际体重 (早晨)
+  overweightAmount  Float?   // 超重差值
+
+  totalIntake       Float    @default(0)  // 当日总摄入
+  exerciseBurned    Float    @default(0)  // 运动消耗
+  remainingAllowance Float  // 还能吃多少
+
+  breakfast         String?  // 早餐记录 (JSON)
+  lunch             String?  // 午餐记录
+  dinner            String?  // 晚餐记录
+  snack             String?  // 加餐记录
+  exercise          String?  // 运动记录 (JSON)
+
+  notes             String?  // 备注
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([date])
+}
